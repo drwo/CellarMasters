@@ -34,7 +34,7 @@ db.fetch.cm <- function(login.name, passphrase) {
   cm.select <-"select first_name as name, surname, cellar_master_id as id, wine_cellar_name as cellar from cellar_master"
   cm.where <- paste("where login_name = ", esc(login.name), " and passphrase = ", esc(passphrase))
   cm.sql <- sql(paste(cm.select, cm.where))
-  as_tibble(db.fetch(cm.sql))
+  db.fetch(cm.sql)
 }
 
 db.fetch.table.pk <- function(table) {
@@ -97,7 +97,7 @@ db.fetch.cellar <- function(cellar.master) {
                               LEFT JOIN winename USING (name_id)
                               LEFT JOIN tastingnote USING (wine_id) ")
   wine.cellar.sql <- sql(paste(wine.cellar.sql.select, wine.cellar.sql.from, "WHERE w.cellar_master_id =", cellar.master$id))
-  as_tibble(db.fetch(wine.cellar.sql))
+  db.fetch(wine.cellar.sql)
 }
 
 db.update.wine.info <- function(wine.id, new.num, new.notes, new.tasted, new.location, new.rating) {
@@ -150,7 +150,6 @@ db.add.wine <- function(wine) {
 db.fetch.producers <- function() {
   query <- sql("SELECT p.PRODUCER AS Producer FROM producer AS p")
   db.fetch(query) %>%
-    as_tibble() %>%
     distinct() %>%
     arrange(Producer)
 }
@@ -158,7 +157,6 @@ db.fetch.producers <- function() {
 db.fetch.origins <- function() {
   query <- sql("SELECT o.ORIGIN AS Origin FROM origin AS o")
   db.fetch(query) %>%
-    as_tibble() %>%
     distinct() %>%
     arrange(Origin)
 }
@@ -166,7 +164,6 @@ db.fetch.origins <- function() {
 db.fetch.appellations <- function() {
   query <- sql("SELECT a.APPELLATION AS Appellation FROM appellation AS a")
   db.fetch(query) %>%
-    as_tibble() %>%
     distinct() %>%
     arrange(Appellation)
 }
@@ -174,7 +171,6 @@ db.fetch.appellations <- function() {
 db.fetch.varietals <- function() {
   query <- sql("SELECT v.VARIETY AS Varietal FROM variety AS v")
   db.fetch(query) %>%
-    as_tibble() %>%
     distinct() %>%
     arrange(Varietal)
 }
@@ -182,7 +178,6 @@ db.fetch.varietals <- function() {
 db.fetch.names <- function() {
   query <- sql("SELECT n.NAME AS `Name` FROM winename AS n")
   db.fetch(query) %>%
-    as_tibble() %>%
     distinct() %>%
     arrange(Name)
 }
