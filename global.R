@@ -1,4 +1,4 @@
-test.run <- F
+test.run <- T
 
 db.connect <- function() {
   if (test.run) {
@@ -33,8 +33,7 @@ esc <- function(x) {
 db.fetch.cm <- function(login.name, passphrase) {
   cm.select <-"select first_name as name, surname, cellar_master_id as id, wine_cellar_name as cellar from cellar_master"
   cm.where <- paste("where login_name = ", esc(login.name), " and passphrase = ", esc(passphrase))
-  cm.sql <- sql(paste(cm.select, cm.where))
-  db.fetch(cm.sql)
+  db.fetch(sql(paste(cm.select, cm.where)))
 }
 
 db.fetch.table.pk <- function(table) {
@@ -102,21 +101,21 @@ db.fetch.cellar <- function(cellar.master) {
 
 db.update.wine.info <- function(wine.id, new.num, new.notes, new.tasted, new.location, new.rating) {
   upd <- paste("update tastingnote set notes = ", esc(new.notes), " where wine_id = ", wine.id)
-  print(upd)
-  print(paste("db.update.wine.info", new.tasted))
+  # print(upd)
+  # print(paste("db.update.wine.info", new.tasted))
   upd <- sql(paste("update wine set num_bottles = ", esc(new.num),
                    ", location = ", esc(new.location),
                    ", rating = ", esc(new.rating),
                    " where wine_id = ", wine.id))
-  print(db.execute(upd))
+  db.execute(upd)
   upd <- sql(paste("update tastingnote set notes = ", esc(new.notes), 
                    ", last_tasting = ", esc(new.tasted),
                    " where wine_id = ", wine.id))
-  print(db.execute(upd))
+  db.execute(upd)
 } 
 
 db.fetch.table <- function(table, col.name, as.name) {
-  col.id <- paste(col.name, "_ID, ", sep = "")
+  col.id <- paste0(col.name, "_ID, ")
   query <- sql(paste("select ", col.id, col.name, " AS `", as.name, "` FROM ", table, sep = ""))
   db.fetch(query)
 }
@@ -131,19 +130,18 @@ db.add.wine <- function(wine) {
     paste("cellar_master_id =", 1, ",") %>%
     paste("num_bottles = ", wine$n, ",") %>%
     paste("vintage = ", wine$vintage, ",") %>%
-    paste("producer_id = (select producer_id from producer as p where p.producer =", esc((wine$producer)), "),") %>%
-    paste("name_id = (select name_id from winename as wn where wn.name =", esc((wine$name)), "),") %>%
-    paste("variety_id = (select variety_id from variety as v where v.variety =", esc((wine$varietal)), "),") %>%
-    paste("origin_id = (select origin_id from origin as o where o.origin =", esc((wine$origin)), "),") %>%
-    paste("appellation_id = (select appellation_id from appellation as a where a.appellation =", esc((wine$appellation)), "),") %>%
-    paste("last_purchase_date =", esc((wine$purchased)), ",") %>%
-    paste("bottle_size =", esc((wine$size)), ",") %>%
-    paste("location =", esc((wine$location))) %>%
+    paste("producer_id = (select producer_id from producer as p where p.producer =", esc(wine$producer), "),") %>%
+    paste("name_id = (select name_id from winename as wn where wn.name =", esc(wine$name), "),") %>%
+    paste("variety_id = (select variety_id from variety as v where v.variety =", esc(wine$varietal), "),") %>%
+    paste("origin_id = (select origin_id from origin as o where o.origin =", esc(wine$origin), "),") %>%
+    paste("appellation_id = (select appellation_id from appellation as a where a.appellation =", esc(wine$appellation), "),") %>%
+    paste("last_purchase_date =", esc(wine$purchased), ",") %>%
+    paste("bottle_size =", esc(wine$size), ",") %>%
+    paste("location =", esc(wine$location)) %>%
     sql()
   if (db.execute(q)) {
     db.increment.table.pk("wine")
     db.execute(sql(paste("insert into tastingnote set wine_id =", pk, ", notes = NULL, last_tasting = NULL")))
-    
   }
 }
 
@@ -183,7 +181,7 @@ db.fetch.names <- function() {
 }
 
 db.duplicate.attribute <- function(table, value) {
-  query <- sql(paste("SELECT", table, "FROM", table, "WHERE", table, "= ", esc((value))))
+  query <- sql(paste("SELECT", table, "FROM", table, "WHERE", table, "= ", esc(value)))
   nrow(db.fetch(query)) != 0
 }
 
@@ -197,7 +195,7 @@ db.insert.new.attribute <- function(table, attribute) {
   table.id <- paste0(table, "_id")
   columns <- paste(table, table.id, sep = ",")
   columns <- paste0("(", columns, ")")
-  values <- paste(esc((attribute)), pk, sep = ",")
+  values <- paste(esc(attribute), pk, sep = ",")
   values <- paste0("(", values, ")")
   q <- sql(paste("insert into", table, columns, "VALUES", values))
   if (ok <- db.execute(q)) {
@@ -207,7 +205,7 @@ db.insert.new.attribute <- function(table, attribute) {
 }
 
 db.insert.new.wine.name <- function(name) {
-  query <- sql(paste("SELECT name FROM winename WHERE name =", esc((name))))
+  query <- sql(paste("SELECT name FROM winename WHERE name =", esc(name)))
   if (nrow(db.fetch(query)) != 0 | name == "") {
     # print("duplicate or no name")
     return(NULL)
@@ -215,7 +213,7 @@ db.insert.new.wine.name <- function(name) {
   # print("attempting insertion")
   pk <- db.next.table.pk("winename")
   # print(pk)
-  q <- sql(paste("INSERT INTO winename (name, name_id) VALUES (", esc((name)), ",", pk, ")"))
+  q <- sql(paste("INSERT INTO winename (name, name_id) VALUES (", esc(name), ",", pk, ")"))
   if (ok <- db.execute(q)) {
     # print("incrementing pk")
     db.increment.table.pk("winename")
