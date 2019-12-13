@@ -1,7 +1,11 @@
 test.run <- T
+dev.run <- F
 
 db.connect <- function() {
-  if (test.run) {
+  if (dev.run) {
+    db.name <- "CellarMastersDev"
+  } 
+  else if (test.run) {
     db.name = "CellarMastersTest"
   }
   else {
@@ -120,6 +124,15 @@ db.fetch.table <- function(table, col.name, as.name) {
   db.fetch(query)
 }
 
+db.fetch.tbl <- function(table, col.name, as.name) {
+  channel <- db.connect()
+  t <- tbl(channel, table) %>%
+    # use unquote operator !! with assignment :=
+    rename(!!as.name := col.name) %>%
+    collect() 
+  dbDisconnect(channel)
+  t
+}
 
 db.add.wine <- function(wine) {
   # wine is a list with these fields: n, vintage, producer, name, varietal, origin, appellation, purchased, size & location
@@ -145,38 +158,30 @@ db.add.wine <- function(wine) {
   }
 }
 
+
+
 db.fetch.producers <- function() {
-  query <- sql("SELECT p.PRODUCER AS Producer FROM producer AS p")
-  db.fetch(query) %>%
-    distinct() %>%
+  db.fetch.tbl("producer", "PRODUCER", "Producer") %>%
     arrange(Producer)
 }
 
 db.fetch.origins <- function() {
-  query <- sql("SELECT o.ORIGIN AS Origin FROM origin AS o")
-  db.fetch(query) %>%
-    distinct() %>%
+  db.fetch.tbl("origin", "ORIGIN", "Origin") %>%
     arrange(Origin)
 }
 
 db.fetch.appellations <- function() {
-  query <- sql("SELECT a.APPELLATION AS Appellation FROM appellation AS a")
-  db.fetch(query) %>%
-    distinct() %>%
+  db.fetch.tbl("appellation", "APPELLATION", "Appellation") %>%
     arrange(Appellation)
 }
 
 db.fetch.varietals <- function() {
-  query <- sql("SELECT v.VARIETY AS Varietal FROM variety AS v")
-  db.fetch(query) %>%
-    distinct() %>%
+  db.fetch.tbl("variety", "VARIETY", "Varietal") %>%
     arrange(Varietal)
 }
 
 db.fetch.names <- function() {
-  query <- sql("SELECT n.NAME AS `Name` FROM winename AS n")
-  db.fetch(query) %>%
-    distinct() %>%
+  db.fetch.tbl("winename", "NAME", "Name") %>%
     arrange(Name)
 }
 
