@@ -1,0 +1,98 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Introduction
+The purpose of this notebook is to simplify finding which of my wines are stored in a specified location without regard to any other locations where the wines in the specified location may be stored. We are only concerned with my cellar and the production database. The functions are not designed to work with other cellars (of which there really are none!). 
+
+# Fetch My Cellar
+Note the manipulation of the global.R variable test.run.
+
+```{r}
+test.run <- F
+my.cellar <- db.fetch.cm("drwo@woteki.com", "Wine!Warrior") %>%
+    db.fetch.cellar()
+# test.run <- T
+```
+
+```{r}
+(my.cellar <- my.cellar %>%
+   select(ID, Vint, Producer, Wine, Location, Num))
+```
+
+# Check Total Number of Bottles
+Total count:
+```{r}
+num.total <- function(cellar = my.cellar) {
+  sum(cellar$Num)
+}
+num.total()
+```
+
+# Find all wines in a specified location
+Given a location, find all the wines that are in that location. The data that are returned include all the other locations those wines are stored and the total number of bottles of each wine.
+```{r}
+find.for.location <- function(location, cellar = my.cellar) {
+  
+  # local utility function
+  # Given a wine in the cellar, represented by a row of my.cellar, and a location in the cellar, determine whether there is any of that wine in the specified location:
+  location.has.wine <- function(wine, location) {
+    locs <- str_extract_all(wine$Location, "[[:alpha:]]+")
+    # print(locs)
+    location %in% locs[[1]]
+  }
+  
+  wines <- tibble(ID = 0, vint = 0, producer = "", wine = "", location = "", total.num = 0)
+  for (i in 1:nrow(cellar)) {
+    wine <- cellar[i, ]
+    if (location.has.wine(wine, location) ) {
+      l <- wine$Location
+      n <- wine$Num
+      wine <- tibble(ID = wine$ID, vint = wine$Vint, producer = wine$Producer, wine = wine$Wine, location = l, total.num = n)
+      wines <- wines %>%
+        bind_rows(wine)
+    }
+  }
+  wines %>% filter(location != "")
+}
+```
+
+# Tabulate Location
+Unlike the previous function, this function returns only the number of each wine that are in the specified location without regard to any other locations where the wines in the specified location may be stored. This function fulfills the goal stated in the introduction to the notebook. It makes it easier to see which wines are in the specified location without regard to other places the wins may be stored.
+
+```{r}
+tab.for.location <- function(location, cellar = my.cellar) {
+  
+  # a given wine may be stored in several locations
+  # this function finds how many bottles of it are in the specified location and discards the rest of the locations
+  isolate.location <- function(a.wine) {
+    # parse the location information
+    locs <- str_extract_all(a.wine$location, "[[:alpha:]]+")[[1]]
+    # parse the number of bottles info
+    nums <- str_extract_all(a.wine$location, "\\d+")[[1]]
+    # if length(nums) == 0 it's because there is only one location and all of the wine is in that location
+    if (length(nums) == 0) nums <- as.character(a.wine$total.num)
+    # locs and nums should now be 2 vectors of equal length where locs is all of the locations where the wine is stored
+    # and nums is the corresponding number of bottles
+    # create a tibble and from these vectors, filter to the desired location and return the result
+    tibble(loc = locs, num = nums) %>%
+      filter(loc == location)
+  }
+  
+  # set up a header for a tibble that will hold all the wines that are in the sepcified location
+  wines <- tibble(ID = 0, vint = 0, producer = "", wine = "", location = "", num = 0)
+  # find all the wines that have at least some bottles specified by the input parameter location
+  found.wines <- find.for.location(location, cellar)
+  for (i in 1:nrow(found.wines)) {
+    w <- found.wines[i, ]
+    il <- isolate.location(w)
+    w <- tibble(ID = w$ID, vint = w$vint, producer = w$producer, wine = w$wine, location = il$loc, num = as.numeric(il$num))
+    wines <- wines %>%
+      bind_rows(w)
+  }
+  # get rid of the summy top row of wines and return the result
+  wines %>% filter(location != "") 
+}
+```
+
