@@ -4,6 +4,9 @@
 .Ruserdata
 *.tiff
 examples/*
-CellarMastersPro.bak
-
+CellarMastersPro.bak*
+.CellarMastersPro*
+*.html
+notebooks/dbplyr*
+notebooks/testMaria*
 
