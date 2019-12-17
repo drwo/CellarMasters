@@ -37,9 +37,9 @@ init.cm <- function(login.name, passphrase) {
   user <- db.fetch.cm(login.name, passphrase)
   cm$login.name = login.name
   cm$passphrase = passphrase
-  cm$name = user$name
+  cm$name = user$first.name
   cm$surname = user$surname
-  cm$id = user$id
+  cm$id = user$ID
   cm$logged.in = T
   cm
 }
