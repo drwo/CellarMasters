@@ -1,5 +1,5 @@
 test.run <- T
-dev.run <- F
+dev.run <- T
 
 db.connect <- function() {
   if (dev.run) {
@@ -35,9 +35,13 @@ esc <- function(x) {
 }
 
 db.fetch.cm <- function(login.name, passphrase) {
-  cm.select <-"select first_name as name, surname, cellar_master_id as id, wine_cellar_name as cellar from cellar_master"
-  cm.where <- paste("where login_name = ", esc(login.name), " and passphrase = ", esc(passphrase))
-  db.fetch(sql(paste(cm.select, cm.where)))
+  con <- db.connect()
+  cm <- tbl(con, "cellar_master") %>%
+    filter(login.name == login.name & passphrase == passphrase) %>%
+    collect()
+  # print(paste("db.fetch.cm", cm))
+  dbDisconnect(con)
+  cm
 }
 
 db.fetch.table.pk <- function(table) {
@@ -74,33 +78,18 @@ db.valid.login <- function(login.name, passphrase) {
 }
 
 db.fetch.cellar <- function(cellar.master) {
-  wine.cellar.sql.select <- sql("SELECT w.wine_id AS `ID`,
-                                w.LAST_PURCHASE_DATE AS `Purchased`,
-                                w.LAST_PURCHASE_PRICE AS `Price`,
-                                w.LAST_PURCHASED_FROM AS `Source`,
-                                w.LOCATION AS `Location`,
-                                w.NUM_BOTTLES AS `Num`,
-                                w.RATING AS `Rating`,
-                                w.VINTAGE as `Vint`,
-                                w.BOTTLE_SIZE as `Size`,
-                                appellation.APPELLATION AS `Appellation`,
-                                producer.PRODUCER AS `Producer`,
-                                origin.ORIGIN AS `Origin`,
-                                classification.CLASSIFICATION AS `Classification`,
-                                variety.VARIETY AS `Varietal`,
-                                winename.NAME AS `Wine`,
-                                tastingnote.LAST_TASTING AS `Tasted`,
-                                tastingnote.NOTES as `Notes`")
-  wine.cellar.sql.from <- sql("FROM wine AS w
-                              LEFT JOIN appellation USING (appellation_id)
-                              LEFT JOIN producer USING (producer_id)
-                              LEFT JOIN origin USING (origin_id)
-                              LEFT JOIN classification USING (classification_id)
-                              LEFT JOIN variety USING (variety_id)
-                              LEFT JOIN winename USING (name_id)
-                              LEFT JOIN tastingnote USING (wine_id) ")
-  wine.cellar.sql <- sql(paste(wine.cellar.sql.select, wine.cellar.sql.from, "WHERE w.cellar_master_id =", cellar.master$id))
-  db.fetch(wine.cellar.sql)
+  con <- db.connect()
+  wines <- tbl(con, "wine") %>%
+    left_join(tbl(con, "appellation"), by = "APPELLATION_ID") %>%
+    left_join(tbl(con, "classification"), by = "CLASSIFICATION_ID") %>%
+    left_join(tbl(con, "winename"), by = "NAME_ID") %>%
+    left_join(tbl(con, "tastingnote"), by = "WINE_ID") %>%
+    left_join(tbl(con, "origin"), by = "ORIGIN_ID") %>%
+    left_join(tbl(con, "producer"), by = "PRODUCER_ID") %>%
+    left_join(tbl(con, "variety"), by = "VARIETY_ID") %>%
+    collect()
+  dbDisconnect(con)
+  wines
 }
 
 db.update.wine.info <- function(wine.id, new.num, new.notes, new.tasted, new.location, new.rating) {
@@ -118,71 +107,65 @@ db.update.wine.info <- function(wine.id, new.num, new.notes, new.tasted, new.loc
   db.execute(upd)
 } 
 
-db.fetch.table <- function(table, col.name, as.name) {
-  col.id <- paste0(col.name, "_ID, ")
-  query <- sql(paste("select ", col.id, col.name, " AS `", as.name, "` FROM ", table, sep = ""))
-  db.fetch(query)
-}
-
-db.fetch.tbl <- function(table, col.name, as.name) {
-  channel <- db.connect()
-  t <- tbl(channel, table) %>%
-    # use unquote operator !! with assignment :=
-    rename(!!as.name := col.name) %>%
-    collect() 
-  dbDisconnect(channel)
-  t
-}
-
 db.add.wine <- function(wine) {
   # wine is a list with these fields: n, vintage, producer, name, varietal, origin, appellation, purchased, size & location
   # print(wine)
   pk <- db.next.table.pk("wine")
-  q <- paste("insert into wine set") %>%
-    paste("wine_id =", pk, ",") %>%
-    paste("cellar_master_id =", 1, ",") %>%
-    paste("num_bottles = ", wine$n, ",") %>%
-    paste("vintage = ", wine$vintage, ",") %>%
-    paste("producer_id = (select producer_id from producer as p where p.producer =", esc(wine$producer), "),") %>%
-    paste("name_id = (select name_id from winename as wn where wn.name =", esc(wine$name), "),") %>%
-    paste("variety_id = (select variety_id from variety as v where v.variety =", esc(wine$varietal), "),") %>%
-    paste("origin_id = (select origin_id from origin as o where o.origin =", esc(wine$origin), "),") %>%
-    paste("appellation_id = (select appellation_id from appellation as a where a.appellation =", esc(wine$appellation), "),") %>%
-    paste("last_purchase_date =", esc(wine$purchased), ",") %>%
-    paste("bottle_size =", esc(wine$size), ",") %>%
-    paste("location =", esc(wine$location)) %>%
+  
+  wine_id <- pk;
+  num <- wine$n
+  vint <- wine$vintage
+  producer_id <- paste("(select producer_id from producer as p where p.Producer =", esc(wine$producer), ")")
+  name_id <- paste("(select name_id from winename as wn where wn.Wine =", esc(wine$name), ")")
+  variety_id <- paste("(select variety_id from variety as v where v.Varietal =", esc(wine$varietal), ")")
+  origin_id <- paste("(select origin_id from origin as o where o.Origin =", esc(wine$origin), ")")
+  appellation_id <- paste("(select appellation_id from appellation as a where a.Appellation =", esc(wine$appellation), ")")
+  purchased <- esc(wine$purchased)
+  size <- esc(wine$size)
+  location <- esc(wine$location)
+  
+  q <- paste("insert into wine (WINE_ID, Num, Vint, PRODUCER_ID, NAME_ID, VARIETY_ID, ORIGIN_ID, APPELLATION_ID, Purchased, Size, Location)")
+  values <- paste(wine_id, num, vint, producer_id, name_id, variety_id, origin_id, appellation_id, purchased, size, location, sep= ",")
+  q <- paste(q, "VALUES (", values,  ")") %>%
     sql()
+  
   if (db.execute(q)) {
     db.increment.table.pk("wine")
-    db.execute(sql(paste("insert into tastingnote set wine_id =", pk, ", notes = NULL, last_tasting = NULL")))
+    db.execute(sql(paste("insert into tastingnote set wine_id =", pk, ", Notes = NULL, Tasted = NULL")))
   }
 }
 
 
-
+db.fetch.attribute.table <- function(table, attribute) {
+  channel <- db.connect()
+  t <- tbl(channel, table) %>%
+    collect()
+  dbDisconnect(channel)
+  t
+}
 db.fetch.producers <- function() {
-  db.fetch.tbl("producer", "PRODUCER", "Producer") %>%
+  db.fetch.attribute.table("producer", "Producer") %>%
     arrange(Producer)
 }
 
 db.fetch.origins <- function() {
-  db.fetch.tbl("origin", "ORIGIN", "Origin") %>%
+  db.fetch.attribute.table("origin", "Origin") %>%
     arrange(Origin)
 }
 
 db.fetch.appellations <- function() {
-  db.fetch.tbl("appellation", "APPELLATION", "Appellation") %>%
+  db.fetch.attribute.table("appellation", "Appellation") %>%
     arrange(Appellation)
 }
 
 db.fetch.varietals <- function() {
-  db.fetch.tbl("variety", "VARIETY", "Varietal") %>%
+  db.fetch.attribute.table("variety", "Varietal") %>%
     arrange(Varietal)
 }
 
 db.fetch.names <- function() {
-  db.fetch.tbl("winename", "NAME", "Name") %>%
-    arrange(Name)
+  db.fetch.attribute.table("winename", "Wine") %>%
+    arrange(Wine)
 }
 
 db.duplicate.attribute <- function(table, value) {
