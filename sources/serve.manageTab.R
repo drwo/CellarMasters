@@ -79,7 +79,7 @@ observeEvent(input$confirm.add.attributes, {
   db.insert.new.attribute("producer", input$new.producer)
   db.insert.new.attribute("origin", input$new.origin)
   db.insert.new.attribute("appellation", input$new.appellation)
-  db.insert.new.attribute("variety", input$new.varietal)
+  db.insert.new.attribute("varietal", input$new.varietal)
   db.insert.new.wine.name(input$new.name)
   removeModal()
   update.attribute.inputs()
