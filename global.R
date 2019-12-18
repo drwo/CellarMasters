@@ -86,7 +86,7 @@ db.fetch.cellar <- function(cellar.master) {
     left_join(tbl(con, "tastingnote"), by = "WINE_ID") %>%
     left_join(tbl(con, "origin"), by = "ORIGIN_ID") %>%
     left_join(tbl(con, "producer"), by = "PRODUCER_ID") %>%
-    left_join(tbl(con, "variety"), by = "VARIETY_ID") %>%
+    left_join(tbl(con, "varietal"), by = "VARIETY_ID") %>%
     collect()
   dbDisconnect(con)
   wines
@@ -117,7 +117,7 @@ db.add.wine <- function(wine) {
   vint <- wine$vintage
   producer_id <- paste("(select producer_id from producer as p where p.Producer =", esc(wine$producer), ")")
   name_id <- paste("(select name_id from winename as wn where wn.Wine =", esc(wine$name), ")")
-  variety_id <- paste("(select variety_id from variety as v where v.Varietal =", esc(wine$varietal), ")")
+  variety_id <- paste("(select variety_id from varietal as v where v.Varietal =", esc(wine$varietal), ")")
   origin_id <- paste("(select origin_id from origin as o where o.Origin =", esc(wine$origin), ")")
   appellation_id <- paste("(select appellation_id from appellation as a where a.Appellation =", esc(wine$appellation), ")")
   purchased <- esc(wine$purchased)
@@ -145,26 +145,31 @@ db.fetch.attribute.table <- function(table, attribute) {
 }
 db.fetch.producers <- function() {
   db.fetch.attribute.table("producer", "Producer") %>%
+    select(Producer) %>%
     arrange(Producer)
 }
 
 db.fetch.origins <- function() {
   db.fetch.attribute.table("origin", "Origin") %>%
+    select(Origin) %>%
     arrange(Origin)
 }
 
 db.fetch.appellations <- function() {
   db.fetch.attribute.table("appellation", "Appellation") %>%
+    select(Appellation) %>%
     arrange(Appellation)
 }
 
 db.fetch.varietals <- function() {
-  db.fetch.attribute.table("variety", "Varietal") %>%
+  db.fetch.attribute.table("varietal", "Varietal") %>%
+    select(Varietal) %>%
     arrange(Varietal)
 }
 
 db.fetch.names <- function() {
   db.fetch.attribute.table("winename", "Wine") %>%
+    select(Wine) %>%
     arrange(Wine)
 }
 
@@ -175,17 +180,17 @@ db.duplicate.attribute <- function(table, value) {
 
 db.insert.new.attribute <- function(table, attribute) {
   if (db.duplicate.attribute(table, attribute) | attribute == "") {
-    # print("returning")
+    # print(paste("duplicate attribute", attribute))
     return(NULL)
   }
   # print("attempting insertion")
   pk <- db.next.table.pk(table)
   table.id <- paste0(table, "_id")
-  columns <- paste(table, table.id, sep = ",")
-  columns <- paste0("(", columns, ")")
-  values <- paste(esc(attribute), pk, sep = ",")
-  values <- paste0("(", values, ")")
-  q <- sql(paste("insert into", table, columns, "VALUES", values))
+  columns <- paste0("(", table, ",", table.id, ")")
+  attribute <- esc(attribute)
+  values <- paste0("(", attribute, ",", pk, ")")
+  q <- paste("insert into", table, columns, "VALUES", values) %>%
+    sql()
   if (ok <- db.execute(q)) {
     db.increment.table.pk(table)
   }
@@ -193,15 +198,15 @@ db.insert.new.attribute <- function(table, attribute) {
 }
 
 db.insert.new.wine.name <- function(name) {
-  query <- sql(paste("SELECT name FROM winename WHERE name =", esc(name)))
+  query <- sql(paste("SELECT wine FROM winename WHERE wine =", esc(name)))
   if (nrow(db.fetch(query)) != 0 | name == "") {
-    # print("duplicate or no name")
+    print("duplicate or no name")
     return(NULL)
   }
   # print("attempting insertion")
   pk <- db.next.table.pk("winename")
   # print(pk)
-  q <- sql(paste("INSERT INTO winename (name, name_id) VALUES (", esc(name), ",", pk, ")"))
+  q <- sql(paste("INSERT INTO winename (wine, name_id) VALUES (", esc(name), ",", pk, ")"))
   if (ok <- db.execute(q)) {
     # print("incrementing pk")
     db.increment.table.pk("winename")
