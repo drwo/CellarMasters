@@ -23,8 +23,9 @@ db.fetch <- function(sql) {
 
 db.execute <- function(sql) {
   channel <- db.connect()
-  dbClearResult(dbSendStatement(channel, sql))
+  n <- dbExecute(channel, sql)
   dbDisconnect(channel)
+  n
 }
 
 esc <- function(x) {
@@ -46,13 +47,13 @@ db.fetch.cm <- function(login.name, passphrase) {
 
 db.fetch.table.pk <- function(table) {
   # fetch the current pk for the given table
-  q <- sql(paste("select eo.name as name, eo.pk as pk from eo_pk_table as eo where name = ", esc(table))) 
-  as.integer(db.fetch(q)[1,2])
+  q <- sql(paste("select eo.pk from eo_pk_table as eo where eo.table = ", esc(table))) 
+  as.integer(db.fetch(q))
 }
 
 db.increment.table.pk <-  function(table) {
   # increment the current pk for the given table
-  q <- paste("update eo_pk_table as eo set eo.pk = eo.pk + 1 where eo.name = ", esc(table))
+  q <- sql(paste("update eo_pk_table as eo set eo.pk = eo.pk + 1 where eo.table = ", esc(table)))
   db.execute(q)
 }
 
@@ -60,12 +61,6 @@ db.next.table.pk <- function(table) {
   # fetch the next pk value to use for the given table
   db.fetch.table.pk(table) + 1
 }
-
-db.fetch.pk.for.value <- function(table, value) {
-  # fetch the pk for the given value in the given table
-  
-}
-
 
 db.valid.login <- function(login.name, passphrase) {
   cm <- db.fetch.cm(login.name, passphrase)
@@ -174,13 +169,19 @@ db.fetch.names <- function() {
 }
 
 db.duplicate.attribute <- function(table, value) {
-  query <- sql(paste("SELECT", table, "FROM", table, "WHERE", table, "= ", esc(value)))
+  if (table == "winename") {
+    field <- "Wine"
+  } else {
+    field <- table
+  }
+  query <- sql(paste("SELECT", field, "FROM", table, "WHERE", field, "= ", esc(value)))
+  # print(query)
   nrow(db.fetch(query)) != 0
 }
 
 db.insert.new.attribute <- function(table, attribute) {
   if (db.duplicate.attribute(table, attribute) | attribute == "") {
-    # print(paste("duplicate attribute", attribute))
+    print(paste("duplicate attribute", attribute))
     return(NULL)
   }
   # print("attempting insertion")
@@ -198,12 +199,11 @@ db.insert.new.attribute <- function(table, attribute) {
 }
 
 db.insert.new.wine.name <- function(name) {
-  query <- sql(paste("SELECT wine FROM winename WHERE wine =", esc(name)))
-  if (nrow(db.fetch(query)) != 0 | name == "") {
-    print("duplicate or no name")
+  if (db.duplicate.attribute("winename", name) | name == "") {
+    print(paste("duplicate wine name", name))
     return(NULL)
   }
-  # print("attempting insertion")
+  print("attempting wine name insertion")
   pk <- db.next.table.pk("winename")
   # print(pk)
   q <- sql(paste("INSERT INTO winename (wine, name_id) VALUES (", esc(name), ",", pk, ")"))
