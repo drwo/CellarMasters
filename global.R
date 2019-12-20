@@ -181,7 +181,7 @@ db.duplicate.attribute <- function(table, value) {
 
 db.insert.new.attribute <- function(table, attribute) {
   if (db.duplicate.attribute(table, attribute) | attribute == "") {
-    print(paste("duplicate attribute", attribute))
+    # print(paste("duplicate attribute", attribute))
     return(NULL)
   }
   # print("attempting insertion")
@@ -200,10 +200,10 @@ db.insert.new.attribute <- function(table, attribute) {
 
 db.insert.new.wine.name <- function(name) {
   if (db.duplicate.attribute("winename", name) | name == "") {
-    print(paste("duplicate wine name", name))
+    # print(paste("duplicate wine name", name))
     return(NULL)
   }
-  print("attempting wine name insertion")
+  # print("attempting wine name insertion")
   pk <- db.next.table.pk("winename")
   # print(pk)
   q <- sql(paste("INSERT INTO winename (wine, name_id) VALUES (", esc(name), ",", pk, ")"))
