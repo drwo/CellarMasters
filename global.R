@@ -1,5 +1,5 @@
-test.run <- T
-dev.run <- T
+test.run <- F
+dev.run <- F
 
 db.connect <- function() {
   if (dev.run) {
