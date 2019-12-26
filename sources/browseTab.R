@@ -1,5 +1,4 @@
 notesTab <- tabPanel(title = "Notes",
-                     fluidRow(column(12, verbatimTextOutput(outputId = "view.summary"))),
                      fluidRow(column(12, verbatimTextOutput(outputId = "selected.wine"))),
                      fluidRow(
                               column(2, numericInput("Num", "Number", value = 0, min = 0, max = 36, step = 1)),
@@ -21,10 +20,10 @@ notesTab <- tabPanel(title = "Notes",
 )
                      
 
-wineDetailsTab <- tabPanel(title="Details",
-                           fluidRow(column(12, verbatimTextOutput(outputId = "details.row.click"))),
-                           value = "details.tab"
-                           )
+detailsTab <- tabPanel(title="Details",
+                       fluidRow(column(12, verbatimTextOutput(outputId = "detailed.wine"))),
+                       value = "details.tab"
+)
 
 browseTab <- 
   tabPanel(title = "Browse Cellar",
@@ -42,8 +41,9 @@ browseTab <-
                actionButton("cancel.filter.list", label = "Cancel"),
                width = 3),
              mainPanel(
+               fluidRow(column(12, verbatimTextOutput(outputId = "view.summary"))),
                fluidRow(column(12, DTOutput(outputId = "browse.table"))),
-               fluidRow(column(12, navbarPage(title="Wine", notesTab, wineDetailsTab)))
+               fluidRow(column(12, navbarPage(title="Wine", notesTab, detailsTab, id = "browse.navbar.page")))
              )
            ),
            value = "browse.tab"

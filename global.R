@@ -103,7 +103,7 @@ db.update.wine.info <- function(wine.id, new.num, new.notes, new.tasted, new.loc
 } 
 
 db.add.wine <- function(wine) {
-  # wine is a list with these fields: n, vintage, producer, name, varietal, origin, appellation, purchased, size & location
+  # wine is a list with these fields: n, vintage, producer, name, varietal, origin, appellation, purchased, size, location, source & price
   # print(wine)
   pk <- db.next.table.pk("wine")
   
@@ -118,9 +118,11 @@ db.add.wine <- function(wine) {
   purchased <- esc(wine$purchased)
   size <- esc(wine$size)
   location <- esc(wine$location)
+  source <- esc(wine$source)
+  price <- esc(wine$price)
   
-  q <- paste("insert into wine (WINE_ID, Num, Vint, PRODUCER_ID, NAME_ID, VARIETY_ID, ORIGIN_ID, APPELLATION_ID, Purchased, Size, Location)")
-  values <- paste(wine_id, num, vint, producer_id, name_id, variety_id, origin_id, appellation_id, purchased, size, location, sep= ",")
+  q <- paste("insert into wine (WINE_ID, Num, Vint, PRODUCER_ID, NAME_ID, VARIETY_ID, ORIGIN_ID, APPELLATION_ID, Purchased, Size, Location, Source, Price)")
+  values <- paste(wine_id, num, vint, producer_id, name_id, variety_id, origin_id, appellation_id, purchased, size, location, source, price, sep= ",")
   q <- paste(q, "VALUES (", values,  ")") %>%
     sql()
   
@@ -213,3 +215,4 @@ db.insert.new.wine.name <- function(name) {
   }
   ok
 }
+

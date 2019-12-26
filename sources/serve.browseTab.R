@@ -63,6 +63,7 @@ init.browsing <- function() {
   update.select.inputs(cellar)
   update.view.inputs(cellar)
   update.wine.info()
+  update.details.info()
 }
 
 open.stock.view <- function(cellar.all) {
@@ -191,9 +192,10 @@ apply.list.selections <- function(producer = "All", origin = "All", appellation 
 }
 
 update.wine.info <- function() {
-  output$selected.wine <- renderText({paste("Selected Wine:", cellar$wine$Vint,
-                                            cellar$wine$Producer, cellar$wine$Wine,
-                                            "Purchased:", cellar$wine$Purchased, "Size:", cellar$wine$Size)})
+  output$selected.wine <- renderText({paste(cellar$wine$Vint,
+                                            cellar$wine$Producer, paste0("'", cellar$wine$Wine, "'"),
+                                            "\tVarietal:", cellar$wine$Varietal,
+                                            "\tSize:", cellar$wine$Size)})
   updateTextAreaInput(session, "Notes", value = cellar$wine$Notes)
   updateNumericInput(session, "Num", value = cellar$wine$Num)
   # print(paste("update.wine.info Tasted=", cellar$wine$Tasted))
@@ -215,15 +217,42 @@ update.wine.info <- function() {
   else {
     updateTextInput(session, "Rating", value = "")
   }
+  output$details <- renderText({paste("Origin:", cellar$wine$Origin,
+                                      "Appellation:", cellar$wine$Appellation,
+                                      # "Classification:", cellar$wine$Appellation,
+                                      "Source:", cellar$wine$Source)})
+ 
+ }
+
+update.details.info <- function() {
+  line1 <- paste(cellar$wine$Vint,
+                 cellar$wine$Producer, paste0("'", cellar$wine$Wine, "'"),
+                 "\tVarietal:", cellar$wine$Varietal,
+                 "\tSize:", cellar$wine$Size)
+  line2 <- paste("\n\nOrigin:", cellar$wine$Origin, "\tAppellation:", cellar$wine$Appellation)
+  line3 <- paste("\n\nPurchased:", cellar$wine$Purchased, "\tPrice:", paste0("$", format(cellar$wine$Price, small.mark = ".", digits = 2)), "\tSource:", cellar$wine$Source)
+  txt <- paste(line1, line2, line3)
+  output$detailed.wine <- renderText({txt})
 }
 
-re.row.selected <- reactive({update.wine.info()}, label = "re.row.selected")
+re.row.selected <- reactive({
+  # print("row.selected")
+  update.wine.info()
+  update.details.info()}, 
+  label = "re.row.selected")
 
 update.view.summary <- function() {
   output$view.summary <- renderText({paste("Viewing", nrow(cellar$selected), "wines totaling", sum(cellar$selected$Num), "bottles")})
+  output$details.summary <- renderText({paste("Viewing", nrow(cellar$selected), "wines totaling", sum(cellar$selected$Num), "bottles")})
 }
 
-re.view.changed <- reactive({update.view.summary()}, label = "re.view.changed")
+
+re.view.changed <- reactive(
+  {
+    # print("view.changed")
+    update.view.summary()
+  }, 
+  label = "re.view.changed")
 
 observeEvent(input$browse.table_rows_selected, {
   cellar$row <- as.integer(input$browse.table_rows_selected[1])
@@ -330,3 +359,11 @@ observeEvent(input$cancel.update.wine.info, {
   re.row.selected()
 })
 
+observeEvent(input$browse.navbar.page, {
+  if (input$browse.navbar.page == "notes.tab") {
+    # print("browsing")
+  }
+  else if (input$browse.navbar.page == "details.tab") {
+    # print("details")
+  }
+})

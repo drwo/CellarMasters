@@ -1,18 +1,17 @@
 addWinesTab <- tabPanel(title = "Add Wines",
                         fluidPage(
-                          fluidRow(column(width = 2, selectInput(inputId = "add.bottles", label = "Bottles", choices = seq(1, 36, 1))),
-                                   column(width = 2, selectInput(inputId = "add.vintage", label = "Vintage", choices = seq(2020, 1990, -1))),
-                                   fluidRow(column(width = 3, selectInput(inputId = "add.producer", label = "Producer", choices = NULL)),
-                                            column(width = 4, selectInput(inputId = "add.wine", label = "Wine Name", choices = NULL)),
-                                            column(width = 3, selectInput(inputId = "add.varietal", label = "Varietal", choices = NULL))),
-                                   fluidRow(column(width = 3, selectInput(inputId = "add.origin", label = "Origin", choices = NULL)),
-                                            column(width = 4, selectInput(inputId = "add.appellation", label = "Appellation", choices = NULL)),
-                                            column(width = 3, dateInput(inputId = "add.date.purchased", label = "Date Purchased", format = "m/d/yy"))),
-                                   fluidRow(column(width = 3, selectInput(inputId = "add.size", label = "Size", choices = c("750 ml", "magnum", "3L", "9L", "other"))),
-                                            column(width = 3, textInput(inputId = "add.location", label = "Location"))),
-                                   fluidRow(column(width = 1, actionButton(inputId = "reset.add.wine", label = "Reset")),
-                                            column(width = 1, actionButton(inputId = "save.add.wine", label = "Add Wine"))
-                                            ))
-                          ),
+                          fluidRow(column(width = 1, selectInput(inputId = "add.bottles", label = "Bottles", choices = seq(1, 36, 1))),
+                                   column(width = 1, selectInput(inputId = "add.vintage", label = "Vintage", choices = seq(2020, 1990, -1))),
+                                   column(width = 3, selectInput(inputId = "add.producer", label = "Producer", choices = NULL)),
+                                   column(width = 3, selectInput(inputId = "add.wine", label = "Wine Name", choices = NULL))),
+                          fluidRow(column(width = 2, selectInput(inputId = "add.origin", label = "Origin", choices = NULL)),
+                                   column(width = 2, selectInput(inputId = "add.appellation", label = "Appellation", choices = NULL)),
+                                   column(width = 2, selectInput(inputId = "add.varietal", label = "Varietal", choices = NULL)),
+                                   column(width = 2, selectInput(inputId = "add.size", label = "Size", choices = c("750 ml", "magnum", "3L", "9L", "other")))),
+                          fluidRow(column(width = 2, dateInput(inputId = "add.date.purchased", label = "Date Purchased", format = "m/d/yy")),
+                                   column(width = 2, textInput(inputId = "add.source", label = "Source")),
+                                   column(width = 1, textInput(inputId = "add.price", label = "Price")),
+                                   column(width = 2, textInput(inputId = "add.location", label = "Location"))),
+                          fluidRow(column(width = 1, actionButton(inputId = "reset.add.wine", label = "Reset")),
+                                   column(width = 1, actionButton(inputId = "save.add.wine", label = "Add Wine")))),
                         value = "addWines.tab")
-                        

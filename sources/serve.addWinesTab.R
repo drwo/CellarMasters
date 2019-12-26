@@ -60,7 +60,9 @@ prepare.added.wine <- function() {
        appellation = input$add.appellation,
        purchased = d,
        size = input$add.size,
-       location = input$add.location)
+       location = input$add.location,
+       source = input$add.source,
+       price = input$add.price)
  }
 
 observeEvent(input$confirm.add.wine, {
