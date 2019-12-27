@@ -337,8 +337,8 @@ observeEvent(input$update.wine.info, {
     }
   }
   new.rating <- input$Rating
-  # print("updating notes db")
-  db.update.wine.info(cellar$wine$ID, new.num, new.notes, new.tasted, new.location, new.rating)
+  # print(paste("cellar$wine$WINE_ID", cellar$wine$WINE_ID))
+  db.update.wine.info(cellar$wine$WINE_ID, new.num, new.notes, new.tasted, new.location, new.rating)
   # print(paste("updating row notes", cellar$row))
   cellar$selected[cellar$row, "Notes"] <- new.notes
   # print(paste("updating num btls", cellar$row))
@@ -349,7 +349,7 @@ observeEvent(input$update.wine.info, {
   cellar$selected[cellar$row, "Rating"] <- new.rating
   output$browse.table <- render.browse.table()
   # print(paste("cellar$cm =", cellar$cm))
-  print(paste("cellar$cm$id =", cellar$cm$id))
+  # print(paste("cellar$cm$id =", cellar$cm$id))
   cellar$all <- db.fetch.cellar(cellar$cm)
   cellar$view <- cellar$view.f(cellar$all)
   # print(paste("done update, cellar$row=", cellar$row))

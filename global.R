@@ -91,13 +91,14 @@ db.update.wine.info <- function(wine.id, new.num, new.notes, new.tasted, new.loc
   upd <- paste("update tastingnote set notes = ", esc(new.notes), " where wine_id = ", wine.id)
   # print(upd)
   # print(paste("db.update.wine.info", new.tasted))
-  upd <- sql(paste("update wine set num_bottles = ", esc(new.num),
+  upd <- sql(paste("update wine set num = ", esc(new.num),
                    ", location = ", esc(new.location),
                    ", rating = ", esc(new.rating),
                    " where wine_id = ", wine.id))
+  # print(upd)
   db.execute(upd)
   upd <- sql(paste("update tastingnote set notes = ", esc(new.notes), 
-                   ", last_tasting = ", esc(new.tasted),
+                   ", tasted = ", esc(new.tasted),
                    " where wine_id = ", wine.id))
   db.execute(upd)
 } 
