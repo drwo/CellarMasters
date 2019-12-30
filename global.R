@@ -35,12 +35,11 @@ esc <- function(x) {
   x
 }
 
-db.fetch.cm <- function(login.name, passphrase) {
+db.fetch.cm <- function(cm.login, cm.passphrase) {
   con <- db.connect()
   cm <- tbl(con, "cellar_master") %>%
-    filter(login.name == login.name & passphrase == passphrase) %>%
+    filter(login.name == cm.login & passphrase == cm.passphrase) %>%
     collect()
-  # print(paste("db.fetch.cm", cm))
   dbDisconnect(con)
   cm
 }
@@ -65,11 +64,10 @@ db.next.table.pk <- function(table) {
 db.valid.login <- function(login.name, passphrase) {
   cm <- db.fetch.cm(login.name, passphrase)
   if (nrow(cm) == 0) {
-    v <- F
+    F
   } else {
-    v <- cm$id == 1
+    cm$ID == 1
   }
-  v
 }
 
 db.fetch.cellar <- function(cellar.master) {

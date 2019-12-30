@@ -8,7 +8,6 @@ shinyServer(function(input, output, session) {
   #     passwordInput("password", label = "", placeholder = "password"),
   #      if (failed)
   #       div(tags$b("Invalid user ID or password", style = "color: red;")),
-  # 
   #     footer = tagList(
   #       actionButton("exit", "Cancel"),
   #       actionButton("ok", "OK")
@@ -40,9 +39,6 @@ shinyServer(function(input, output, session) {
   
   
   observeEvent(input$navbar.page, {
-    if (!cm$logged.in) {
-      init.cm("drwo@woteki.com", "Wine!Warrior")
-    }
     if (input$navbar.page == "browse.tab") {
       # print("browse.tab")
       if (cm$logged.in) {
@@ -58,5 +54,6 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  cm <- init.cm("drwo@woteki.com", "Wine!Warrior")
 })
 
