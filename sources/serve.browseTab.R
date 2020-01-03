@@ -89,12 +89,15 @@ out.of.stock.view <- function(cellar.all) {
 browse.table <- function(cellar) {
   cellar$selected %>%
     select(Num, Vint, Producer, Wine, Tasted, Location, Rating) %>%
-    arrange(Producer)
+    arrange(Producer) 
 }
 
 # render "browse.table"
 render.browse.table <- reactive({
-  renderDT(browse.table(cellar), 
+  # 1/3/2020: I am very confident that there is a bug in renderDT such that it does not always render its first arguement correctly
+  # browse.tabke returns the correct result of a selection but rebderDT does not always render it correctly
+  # there is an interaction between the selecting and the rendering that I do not understand but I attribute the problem to renderDT
+  renderDT(browse.table(cellar),
            selection = list(mode = 'single', selected = c(1), target = 'row'),
            options = list(pageLength = 10, 
                           lengthMenu = c('3', '5', '10', '25', 'All'),
@@ -133,15 +136,15 @@ apply.list.selections <- function(producer = "All", origin = "All", appellation 
     if (length(value) == 0 | value == "All" | is.null(value))
       list
     else
-      list %>% filter(.[col.name] == value)
+      # also can be written as: list %>% filter(.[col.name] == value)
+      list[list[col.name] == value, ]
   }
   
-  selected <- cellar$view %>% 
+  cellar$selected <- cellar$view %>% 
     filter.column("Origin", origin) %>%
     filter.column("Producer", producer) %>%
     filter.column("Appellation", appellation) %>%
     filter.column("Varietal", varietal)
-  cellar$selected <- selected
 }
 
 update.wine.info <- function() {
