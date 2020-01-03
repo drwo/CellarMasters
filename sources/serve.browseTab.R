@@ -104,70 +104,23 @@ render.browse.table <- reactive({
 
 # return a list of all the producers represented in the given cellar
 # if add.hdr is true insert a header at the top of the list for purposes such as selectInput 
-cm.producers <- function(cellar, add.hdr = F, hdr = "") {
+cm.attr <- function(attr, cellar = my.wine.db, add.hdr = F, hdr = "") {
   x <- cellar$all %>%
-    select(Producer) %>%
+    select(attr) %>%
     distinct() %>%
-    arrange(Producer)
+    arrange(.data[[attr]])
   if (add.hdr) {
     x <- x %>%
-      add_row(Producer = hdr, .before = 1)
+      add_row(!!attr := hdr, .before = 1)
   }
   x
 }
 
-cm.origins <- function(cellar, add.hdr = F, hdr = "All") {
-  x <- cellar$all %>%
-    select(Origin) %>%
-    distinct() %>%
-    arrange(Origin)
-  if (add.hdr) {
-    x <- x %>%
-      add_row(Origin = hdr, .before = 1)
-  }
-  x
-}
-
-cm.appellations <- function(cellar, add.hdr = F, hdr = "") {
-  x <- cellar$all %>%
-    select(Appellation) %>%
-    distinct() %>%
-    arrange(Appellation)
-  if (add.hdr) {
-    x <- x %>%
-      add_row(Appellation = hdr, .before = 1)
-  }
-  x
-}
-
-cm.varietals <- function(cellar, add.hdr = F, hdr = "") {
-  x <- cellar$all %>%
-    select(Varietal) %>%
-    distinct() %>%
-    arrange(Varietal)
-  if (add.hdr) {
-    x <- x %>%
-      add_row(Varietal = hdr, .before = 1)
-  }
-  x
-}
-
-cm.wines <- function(cellar, add.hdr = F, hdr = NULL) {
-  x <- cellar$all %>%
-    select(Wine) %>%
-    distinct() %>%
-    arrange(Wine)
-  if (add.hdr) {
-    x <- x %>%
-      add_row(Wine = hdr, .before = 1)
-  }
-  x
-}
 update.select.inputs <- function(cellar) {
-  updateSelectInput(session, "producers", "Producers", cm.producers(cellar, add.hdr = T, hdr = "All"))
-  updateSelectInput(session, "origins", "Origins", cm.origins(cellar, add.hdr = T, hdr = "All"))
-  updateSelectInput(session, "appellations", "Appellations", cm.appellations(cellar, add.hdr = T, hdr = "All"))
-  updateSelectInput(session, "varietals", "Varietals", cm.varietals(cellar, add.hdr = T, hdr = "All"))
+  updateSelectInput(session, "producers", "Producers", cm.attr("Producer", cellar, add.hdr = T, hdr = "All"))
+  updateSelectInput(session, "origins", "Origins", cm.attr("Origin", cellar, add.hdr = T, hdr = "All"))
+  updateSelectInput(session, "appellations", "Appellations", cm.attr("Appellation", cellar, add.hdr = T, hdr = "All"))
+  updateSelectInput(session, "varietals", "Varietals", cm.attr("Varietal", cellar, add.hdr = T, hdr = "All"))
 }
 
 update.view.inputs <- function(cellar) {
