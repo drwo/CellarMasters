@@ -1,11 +1,7 @@
 test.run <- T
-dev.run <- T
 
 db.connect <- function() {
-  if (dev.run) {
-    db.name <- "CellarMastersDev"
-  } 
-  else if (test.run) {
+  if (test.run) {
     db.name = "CellarMastersTest"
   }
   else {

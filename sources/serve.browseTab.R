@@ -104,7 +104,7 @@ render.browse.table <- reactive({
 
 # return a list of all the producers represented in the given cellar
 # if add.hdr is true insert a header at the top of the list for purposes such as selectInput 
-cm.attr <- function(attr, cellar = my.wine.db, add.hdr = F, hdr = "") {
+cm.attr <- function(attr, cellar, add.hdr = F, hdr = "") {
   x <- cellar$all %>%
     select(attr) %>%
     distinct() %>%
