@@ -26,7 +26,7 @@ detailsTab <- tabPanel(title="Details",
 )
 
 browseTab <- 
-  tabPanel(title = "Browse Cellar",
+  tabPanel(title = "Browse Cellar 1.0.1",
            sidebarLayout(
              sidebarPanel(
                strong("Select View:"),

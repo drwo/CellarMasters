@@ -1,4 +1,4 @@
-test.run <- T
+test.run <- F
 
 db.connect <- function() {
   if (test.run) {
