@@ -6,7 +6,7 @@ db.connect <- function(test.run = T, mosaic = F) {
     db.name = "CellarMastersPro"
   }
   if (mosaic) {
-    dbConnect(RMySQL::MySQL(), dbname = db.name, user="mysql", password="-mfvCD196eYH0[", host="localhost")
+    dbConnect(RMySQL::MySQL(), dbname = db.name, user="mysql", password="VNizZ@?3#L.Zk_N8", host="localhost")
   } else {
     dbConnect(RMySQL::MySQL(), dbname = db.name, user="mysql", password="Java!Warrior", host="localhost")
   }
