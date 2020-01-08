@@ -1,13 +1,15 @@
-test.run <- T
-
-db.connect <- function() {
+db.connect <- function(test.run = T, mosaic = F) {
   if (test.run) {
     db.name = "CellarMastersTest"
   }
   else {
     db.name = "CellarMastersPro"
   }
-  dbConnect(RMySQL::MySQL(), dbname = db.name, user="mysql", password="Java!Warrior", host="localhost")
+  if (mosaic) {
+    dbConnect(RMySQL::MySQL(), dbname = db.name, user="mysql", password="-mfvCD196eYH0[", host="localhost")
+  } else {
+    dbConnect(RMySQL::MySQL(), dbname = db.name, user="mysql", password="Java!Warrior", host="localhost")
+  }
 }
 
 db.fetch <- function(sql) {
@@ -31,10 +33,11 @@ esc <- function(x) {
   x
 }
 
-db.fetch.cm <- function(login.name, passphrase) {
+db.fetch.cm <- function(login, password) {
+  # print(paste("db.fetch.cm login =", login, "pwd = ", password))
   con <- db.connect()
   cm <- tbl(con, "cellar_master") %>%
-    filter(login.name == login.name & passphrase == passphrase) %>%
+    filter(login.name == login & passphrase == password) %>%
     collect()
   # print(paste("db.fetch.cm", cm))
   dbDisconnect(con)
@@ -63,7 +66,7 @@ db.valid.login <- function(login.name, passphrase) {
   if (nrow(cm) == 0) {
     v <- F
   } else {
-    v <- cm$id == 1
+    v <- cm$ID == 1
   }
   v
 }
