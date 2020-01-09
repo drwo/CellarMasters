@@ -1,4 +1,12 @@
-db.connect <- function(test.run = T, mosaic = F) {
+library("tidyverse")
+library("DBI")
+library("RMySQL")
+library("shiny")
+library("DT")
+library("lubridate")
+library("dbplyr")
+
+db.connect <- function(test.run = T, mosaic = T) {
   if (test.run) {
     db.name = "CellarMastersTest"
   }
@@ -119,6 +127,10 @@ db.add.wine <- function(wine) {
   size <- esc(wine$size)
   location <- esc(wine$location)
   source <- esc(wine$source)
+ 
+   if (is.na(wine$price) | wine$price == "") {
+    wine$price <- NULL
+  }
   price <- esc(wine$price)
   
   q <- paste("insert into wine (WINE_ID, Num, Vint, PRODUCER_ID, NAME_ID, VARIETY_ID, ORIGIN_ID, APPELLATION_ID, Purchased, Size, Location, Source, Price)")
