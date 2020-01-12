@@ -6,7 +6,7 @@ library("DT")
 library("lubridate")
 library("dbplyr")
 
-db.connect <- function(test.run = T, mosaic = T) {
+db.connect <- function(test.run = T, mosaic = F) {
   if (test.run) {
     db.name = "CellarMastersTest"
   }
@@ -88,7 +88,7 @@ db.fetch.cellar <- function(cellar.master) {
     left_join(tbl(con, "tastingnote"), by = "WINE_ID") %>%
     left_join(tbl(con, "origin"), by = "ORIGIN_ID") %>%
     left_join(tbl(con, "producer"), by = "PRODUCER_ID") %>%
-    left_join(tbl(con, "varietal"), by = "VARIETY_ID") %>%
+    left_join(tbl(con, "varietal"), by = "VARIETAL_ID") %>%
     collect()
   dbDisconnect(con)
   wines
@@ -120,7 +120,7 @@ db.add.wine <- function(wine) {
   vint <- wine$vintage
   producer_id <- paste("(select producer_id from producer as p where p.Producer =", esc(wine$producer), ")")
   name_id <- paste("(select name_id from winename as wn where wn.Wine =", esc(wine$name), ")")
-  variety_id <- paste("(select variety_id from varietal as v where v.Varietal =", esc(wine$varietal), ")")
+  varietal_id <- paste("(select varietal_id from varietal as v where v.Varietal =", esc(wine$varietal), ")")
   origin_id <- paste("(select origin_id from origin as o where o.Origin =", esc(wine$origin), ")")
   appellation_id <- paste("(select appellation_id from appellation as a where a.Appellation =", esc(wine$appellation), ")")
   purchased <- esc(wine$purchased)
@@ -133,8 +133,8 @@ db.add.wine <- function(wine) {
   }
   price <- esc(wine$price)
   
-  q <- paste("insert into wine (WINE_ID, Num, Vint, PRODUCER_ID, NAME_ID, VARIETY_ID, ORIGIN_ID, APPELLATION_ID, Purchased, Size, Location, Source, Price)")
-  values <- paste(wine_id, num, vint, producer_id, name_id, variety_id, origin_id, appellation_id, purchased, size, location, source, price, sep= ",")
+  q <- paste("insert into wine (WINE_ID, Num, Vint, PRODUCER_ID, NAME_ID, VARIETAL_ID, ORIGIN_ID, APPELLATION_ID, Purchased, Size, Location, Source, Price)")
+  values <- paste(wine_id, num, vint, producer_id, name_id, varietal_id, origin_id, appellation_id, purchased, size, location, source, price, sep= ",")
   q <- paste(q, "VALUES (", values,  ")") %>%
     sql()
   
